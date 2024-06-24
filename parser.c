@@ -4,6 +4,9 @@
  */
 
 
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include "gramcnf.h"
 
 //struct function_d  *function_main;
@@ -89,6 +92,9 @@ static void emit_function(void);
 
 
 static void dump_output_file(int save_file);
+
+
+static int CreateOutputFile(void);
 
 //
 // -------------------------------------
@@ -324,9 +330,9 @@ static int parse_name(int token)
         }
 
         // Coloca a string no arquivo de saída.
-        strcat( outfile, real_token_buffer );
+        //strcat( outfile, real_token_buffer );
         // Ao fim da string vamos para a próxima linha do output file
-        strcat( outfile,"\n");
+        //strcat( outfile,"\n");
 
         c = yylex();
 
@@ -456,9 +462,9 @@ static int parse_content(int token)
         }
 
         // Coloca a string no arquivo de saída.
-        strcat( outfile, real_token_buffer );
+        //strcat( outfile, real_token_buffer );
         // Ao fim da string vamos para a próxima linha do output file
-        strcat( outfile,"\n");
+        //strcat( outfile,"\n");
 
         c = yylex();
 
@@ -1669,6 +1675,22 @@ expression_exit:
     return (unsigned long) Result;
 }
 
+static int CreateOutputFile(void)
+{
+    int filedes=0;
+
+    filedes = creat( "output.asm",
+                 S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP );
+    if (filedes != -1) {
+        /* process file */
+        // close( filedes );
+        //return EXIT_SUCCESS;
+        return (int) filedes;
+    }
+
+    return -1;
+}
+
 // Called by parser().
 static void dump_output_file(int save_file)
 {
@@ -1679,6 +1701,8 @@ static void dump_output_file(int save_file)
 // and save the file.
 
     int fSaveFile = save_file;
+    int fPrintFile = FALSE;  //TRUE;
+
 
 // Incluindo no arquivo de output os segmentos.
     strcat ( outfile, TEXT );
@@ -1686,15 +1710,20 @@ static void dump_output_file(int save_file)
     strcat ( outfile, BSS );
 
 // Exibimos o arquivo de output.
-    printf ("\n");
-    printf ("--------------------------------\n");    
-    printf ("OUTPUT FILE:\n");
-    printf ("{%s}\n", outfile);
-    printf ("\n");
-    printf ("--------------------------------\n");
+    if (fPrintFile)
+    {
+        printf ("\n");
+        printf ("--------------------------------\n");    
+        printf ("OUTPUT FILE:\n");
+        printf ("{%s}\n", outfile);
+        printf ("\n");
+        printf ("--------------------------------\n");
+    }
+
 
 // Saving output file.
-    FILE *fp = NULL;
+    //FILE *fp = NULL;
+    int fd=-1;
 
     if (fSaveFile == TRUE){
         printf("dump_output_file: Saving the output file\n");	
@@ -1705,14 +1734,26 @@ static void dump_output_file(int save_file)
 // and another one to save the buffer into the file 
 // and save the file.
 
-		/*
+        /*
 		fp = fopen("output.txt" ,"a");
         if ( (void*) fp != NULL )
         {
             fprintf(fp,outfile);
 		    close( fileno(fp) );
 		}
-        */		
+        */  
+
+        fd = (int) CreateOutputFile();
+        if (fd == -1){
+            printf("Couldn't create output.asm\n");
+            return -1;
+        }
+
+        // Save the output.asm file.
+        size_t Size = sizeof(outfile);
+        write(fd, outfile, Size);
+        close(fd);
+
 	}else{
         printf("dump_output_file: Not saving the output file\n");		
 	};
@@ -1853,9 +1894,9 @@ int parse(int dump_output)
                             //tentando mandar alguma coisa para o arquivo de output 
                             //pra ter o que salvar, pra construir o assembly file;	
                             // strcat( outfile,"\n segment .text \n");
-                            strcat( outfile,"_");
-                            strcat( outfile,save_symbol);
-                            strcat( outfile,":\n");
+                            //strcat( outfile,"_");
+                            //strcat( outfile,save_symbol);
+                            //strcat( outfile,":\n");
                             //recomeçar a lista. 
                             //#bugbug desconsiderando o modificador.
                             State=1;

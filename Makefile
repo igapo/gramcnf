@@ -14,6 +14,6 @@ all:
 clean:
 	rm *.o  
 	-rm ./gramcnf  
-
+	-rm output.asm 
 
 

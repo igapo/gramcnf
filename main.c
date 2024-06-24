@@ -310,6 +310,7 @@ int main(int argc, char *argv[])
     //printf("Calling fopen()    :)\n");
     //while(1){}
 
+    // Input file:
     fp = fopen((char *) argv[2], "rb");
     if (fp == NULL)
     {
